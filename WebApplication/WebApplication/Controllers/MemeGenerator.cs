@@ -1,6 +1,5 @@
 ﻿using System;
-using System.Net.WebSockets;
-using System.Threading;
+using System.IO;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using WebApplication.Models;
@@ -12,10 +11,10 @@ namespace WebApplication.Controllers
 	[ApiController]
 	public class MemeGenerator : ControllerBase
 	{
-
 		public static MemoryMemeRepository MemeRepo = new MemoryMemeRepository();
 
 		[HttpPost]
+		[Route("create")]
 		public ActionResult<String> Post(MemeInfo memeInfo)
 		{
 			var meme = new Meme(memeInfo);
@@ -23,45 +22,32 @@ namespace WebApplication.Controllers
 			return Ok(meme.Guid.ToString());
 		}
 
-		[Route("{id}")]
+		[Route("repo.{format}"), FormatFilter]
 		[HttpGet]
-		public ActionResult GetByID(Guid id)
+		public MemoryMemeRepository GetRepo()
 		{
-			if (HttpContext.WebSockets.IsWebSocketRequest)
-			{
-				var resource = MemeRepo.Get(id);
-				if (resource == null)
-				{
-					return new NotFoundResult();
-				}
-				WebSocket socket = HttpContext.WebSockets.AcceptWebSocketAsync().Result;
+			return MemeRepo;
+		}
 
-				if (socket != null && socket.State == WebSocketState.Open)
-				{
-					while (!HttpContext.RequestAborted.IsCancellationRequested)
-					{
-						bool completed = false;
-						int num = -1;
-						while (!completed)
-						{
-							if (resource.WorkStatus.Percentage == num)
-								continue;
-							if (resource.WorkStatus.Status == WorkStatus.Done)
-								completed = true;
-							num = resource.WorkStatus.Percentage;
-							String response;
-							if(!completed)
-								response = $"{num:D2}\n";
-							else
-								response = "DONE\n";
-							var bytes = System.Text.Encoding.UTF8.GetBytes(response);
-							socket.SendAsync(new System.ArraySegment<byte>(bytes),
-								WebSocketMessageType.Text, true, CancellationToken.None);
-						}
-					}
-				}
-			}
-			return new StatusCodeResult(101);
+		[HttpGet]
+		[Route("delete/{guid}")]
+		public ActionResult DeleteMeme(Guid guid)
+		{
+			Meme meme = MemeRepo.Get(guid);
+			if(meme == null)
+				return new NotFoundResult();
+			MemeRepo.Delete(guid);
+			return Ok();
+		}
+		
+		[Route("view/{guid}")]
+		[HttpGet]
+		public async Task<ActionResult> GetMemeByGuid(Guid guid)
+		{
+			Meme meme = MemeRepo.Get(guid);
+			if(meme == null)
+				return new NotFoundResult();
+			return PhysicalFile(meme.FilePath, "application/octet-stream", enableRangeProcessing: true);
 		}
 	}
 }

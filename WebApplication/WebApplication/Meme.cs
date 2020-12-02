@@ -1,16 +1,20 @@
 ﻿using System;
 using System.IO;
-using System.Linq;
-using System.Threading.Tasks;
 using WebApplication.Models;
-using Xabe.FFmpeg;
-using IStream = System.Runtime.InteropServices.ComTypes.IStream;
 
 namespace WebApplication
 {
+	[Serializable]
 	public class Meme
 	{
-		public String FilePath;
+		protected internal String FilePath
+		{
+			get
+			{
+				return Path.Combine(Startup.ContentRoot, "Videos", $"{Guid}.mp4");
+			}
+		}
+
 		public String CatText;
 		public String DrummerText;
 		public String DrumText;
@@ -24,8 +28,12 @@ namespace WebApplication
 			DrummerText = memeInfo.DrummerText;
 			DrumText = memeInfo.DrumText;
 			Guid = Guid.NewGuid();
-			FilePath = Path.Combine(Startup.ContentRoot, "Videos", $"{Guid}.mp4");
 			WorkStatus = new MemeWork(this);
+		}
+		
+		public void ReadXml(System.Xml.XmlReader reader)
+		{
+			WorkStatus.Meme = this;
 		}
 	}
 }

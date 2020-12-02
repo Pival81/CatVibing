@@ -15,6 +15,8 @@ namespace WebApplication
 			IExtendedXmlSerializer serializer = new ConfigurationContainer().UseAutoFormatting()
 				.UseOptimizedNamespaces()
 				.EnableImplicitTyping(obj.GetType())
+				.Type<Meme>()
+				.EnableReferences(p => p.Guid)
 				.Create();
 
 			var document = serializer.Serialize(new XmlWriterSettings {Indent = true},

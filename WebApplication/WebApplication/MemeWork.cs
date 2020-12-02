@@ -1,17 +1,25 @@
 using System;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Xml.Serialization;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
 using Xabe.FFmpeg;
 
 namespace WebApplication
 {
+    [Serializable]
     public class MemeWork
     {
         public WorkStatus Status;
+        [XmlIgnore, JsonIgnore]
         public Task Worker;
+        [XmlIgnore, JsonIgnore]
         public Meme Meme;
         public int Percentage;
 
+        public MemeWork(){}
         public MemeWork(Meme meme)
         {
             Percentage = 0;
@@ -23,6 +31,7 @@ namespace WebApplication
         public void StartWork()
         {
             Worker.Start();
+            Status = WorkStatus.Working;
         }
 
         public async void DoWork()
@@ -42,8 +51,8 @@ namespace WebApplication
                 conv.OnProgress += (sender, args) =>
                 {
                     Percentage = args.Percent;
-                    Console.Write("\r                ");
-                    Console.Write($"\r{Percentage:D2}");
+                    Debug.Write("\r                ");
+                    Debug.Write($"\r{Percentage:D2}");
                 };
 
                 await conv.Start();
@@ -51,6 +60,7 @@ namespace WebApplication
         }
     }
 
+    [JsonConverter(typeof(StringEnumConverter))]
     public enum WorkStatus
     {
         Canceled,

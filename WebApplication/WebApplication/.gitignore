@@ -1,5 +1,7 @@
 input.mp4
-obj
-bin
+input.mp4.bak
+Database.xml
+obj/*
+bin/*
 Videos/*
 !Videos/.gitkeep
