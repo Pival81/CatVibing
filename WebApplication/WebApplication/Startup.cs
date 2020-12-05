@@ -1,13 +1,14 @@
 using System;
 using System.Threading;
-using System.Threading.Tasks;
 using Fleck;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Newtonsoft.Json;
 using WebApplication.Controllers;
+using WebApplication.Repositories;
 using IApplicationLifetime = Microsoft.AspNetCore.Hosting.IApplicationLifetime;
 
 namespace WebApplication
@@ -28,62 +29,46 @@ namespace WebApplication
 		// This method gets called by the runtime. Use this method to add services to the container.
 		public void ConfigureServices(IServiceCollection services)
 		{
+			services.AddSingleton<IMemeRepository, MemoryMemeRepository>();
 			services.AddControllers()
 				.AddXmlSerializerFormatters()
-				.AddNewtonsoftJson();
-			FleckServer.Start(socket =>
-			{
-				var cancToken = new CancellationTokenSource();
-				var Task = new Task(() =>
+				.AddNewtonsoftJson(options =>
 				{
-					var id = socket.ConnectionInfo.Path.Substring(1);
-					Meme resource = null;
-					try { resource = MemeGenerator.MemeRepo.Get(new Guid(id)); }
-					catch (Exception e) {}
-					if (resource == null)
-					{
-						socket.Send("ERROR");
-						socket.Close();
-						return;
-					}
-					bool completed = false;
-					int num = -1;
-					while (!completed)
-					{
-						if (resource.WorkStatus.Percentage == num)
-							continue;
-						if (resource.WorkStatus.Status == WorkStatus.Done)
-							completed = true;
-						num = resource.WorkStatus.Percentage;
-						String response = $"{num:D2}\n";
-						socket.Send(response);
-						if(resource.WorkStatus.Percentage == 100)
-							socket.Send("DONE\n");
-					}
-					socket.Close();
-				}, cancToken.Token);
-				socket.OnOpen = () => Task.Start();
-				socket.OnClose = () => cancToken.Cancel();
-			});
+					options.SerializerSettings.Formatting = Formatting.Indented;
+					options.SerializerSettings.ReferenceLoopHandling = ReferenceLoopHandling.Ignore;
+					options.SerializerSettings.PreserveReferencesHandling = PreserveReferencesHandling.Objects;
+					options.SerializerSettings.TypeNameHandling = TypeNameHandling.Auto;
+				});
 		}
 
 		// This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-		public void Configure(IApplicationBuilder app, IWebHostEnvironment env, IApplicationLifetime applicationLifetime)
+		public void Configure(IApplicationBuilder app, IWebHostEnvironment env,
+			IApplicationLifetime applicationLifetime, IMemeRepository memeRepository)
 		{
 			if (env.IsDevelopment())
 			{
 				app.UseDeveloperExceptionPage();
 			}
+			
+			FleckServer.Start(socket =>
+			{
+				var cancToken = new CancellationTokenSource();
+				var Task = new FleckTask(socket, cancToken.Token, memeRepository);
+				socket.OnOpen = () => Task.Start();
+				socket.OnClose = () => cancToken.Cancel();
+			});
 
-			applicationLifetime.ApplicationStopping.Register(() => FleckServer.Dispose());
+			applicationLifetime.ApplicationStopping.Register(() =>
+			{
+				FleckServer.Dispose();
+				
+			});
 
 			app.UseHttpsRedirection();
 
 			app.UseRouting();
 
 			app.UseAuthorization();
-
-			app.UseWebSockets();
 
 			app.UseEndpoints(endpoints => { endpoints.MapControllers(); });
 		}

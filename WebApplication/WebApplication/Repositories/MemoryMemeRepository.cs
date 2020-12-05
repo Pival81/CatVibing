@@ -2,54 +2,43 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Xml;
-using System.Xml.Serialization;
 using ExtendedXmlSerializer;
-using ExtendedXmlSerializer.Configuration;
 
-namespace WebApplication
+namespace WebApplication.Repositories
 {
-	public class MemoryMemeRepository
+	public interface IMemeRepository
+	{
+		List<Meme> Memes { get; }
+		Meme Get(Guid memeId);
+		void Add(Meme meme);
+		void Save();
+		void Delete(Guid memeId);
+	}
+
+	public class MemoryMemeRepository : IMemeRepository
 	{
 		private IList<Meme> _Memes { get; set; }
 
-		public List<Meme> Memes
-		{
-			get
-			{
-				return _Memes as List<Meme>;
-			}
-		}
+		public List<Meme> Memes => _Memes as List<Meme>;
 
-		private int RunningCount
-		{
-			get
-			{
-				return _Memes.Count(x => x.WorkStatus.Status == WorkStatus.Working);
-			}
-		}
+		private int RunningCount => _Memes.Count(x => x.WorkStatus.Status == WorkStatus.Working);
 
 		public MemoryMemeRepository()
 		{
-			try
+			try 
 			{
-				IExtendedXmlSerializer serializer = new ConfigurationContainer().UseAutoFormatting()
-					.UseOptimizedNamespaces()
-					.EnableImplicitTyping(this.GetType())
-					.Create();
 				var xml = File.ReadAllText("Database.xml");
-				MemoryMemeRepository xmlrepo = serializer.Deserialize<MemoryMemeRepository>(
-					new XmlReaderSettings{IgnoreWhitespace = false}, xml);
-				_Memes = xmlrepo._Memes;
-			}
+				var xmlrepo = Utils.DefaultXmlSerializer()
+					.Deserialize<List<Meme>>(xml);
+				_Memes = xmlrepo;
+			} 
 			catch (Exception ex)
 			{
+				Console.WriteLine(ex);
 				_Memes = new List<Meme>();
 			}
 		}
- 
-		public IEnumerable<Meme> Get() => _Memes;
- 
+
 		public Meme Get(Guid memeId)
 		{
 			return _Memes.FirstOrDefault(x => x.Guid == memeId);
@@ -59,15 +48,13 @@ namespace WebApplication
 		{
 			_Memes.Add(meme);
 			if (RunningCount < 5)
-			{
 				meme.WorkStatus.StartWork();
-			}
 			Save();
 		}
 
 		public void Save()
 		{
-			var xml = Utils.GetXmlFromObject(this);
+			var xml = Utils.GetXmlFromObject(Memes);
 			using (StreamWriter outputFile = new StreamWriter(Path.Combine(Startup.ContentRoot, "Database.xml")))
 			{
 				outputFile.WriteLine(xml);

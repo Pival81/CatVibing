@@ -1,8 +1,9 @@
 ﻿using System;
-using System.IO;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using WebApplication.Models;
+using WebApplication.Repositories;
 
 namespace WebApplication.Controllers
 {
@@ -11,32 +12,37 @@ namespace WebApplication.Controllers
 	[ApiController]
 	public class MemeGenerator : ControllerBase
 	{
-		public static MemoryMemeRepository MemeRepo = new MemoryMemeRepository();
+		private readonly MemoryMemeRepository _memeRepo;
+
+		public MemeGenerator(IMemeRepository memeRepository)
+		{
+			_memeRepo = memeRepository as MemoryMemeRepository;
+		}
 
 		[HttpPost]
 		[Route("create")]
-		public ActionResult<String> Post(MemeInfo memeInfo)
+		public ActionResult<String> Create(MemeInfo memeInfo)
 		{
 			var meme = new Meme(memeInfo);
-			MemeRepo.Add(meme);
+			_memeRepo.Add(meme);
 			return Ok(meme.Guid.ToString());
 		}
 
 		[Route("repo.{format}"), FormatFilter]
 		[HttpGet]
-		public MemoryMemeRepository GetRepo()
+		public List<Meme> GetRepo()
 		{
-			return MemeRepo;
+			return _memeRepo.Memes;
 		}
 
 		[HttpGet]
 		[Route("delete/{guid}")]
 		public ActionResult DeleteMeme(Guid guid)
 		{
-			Meme meme = MemeRepo.Get(guid);
+			Meme meme = _memeRepo.Get(guid);
 			if(meme == null)
 				return new NotFoundResult();
-			MemeRepo.Delete(guid);
+			_memeRepo.Delete(guid);
 			return Ok();
 		}
 		
@@ -44,7 +50,7 @@ namespace WebApplication.Controllers
 		[HttpGet]
 		public async Task<ActionResult> GetMemeByGuid(Guid guid)
 		{
-			Meme meme = MemeRepo.Get(guid);
+			Meme meme = _memeRepo.Get(guid);
 			if(meme == null)
 				return new NotFoundResult();
 			return PhysicalFile(meme.FilePath, "application/octet-stream", enableRangeProcessing: true);

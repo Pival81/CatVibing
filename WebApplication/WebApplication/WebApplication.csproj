@@ -5,7 +5,6 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <PackageReference Include="Cuemon.AspNetCore.Mvc.Formatters.Xml" Version="5.0.2019.40" />
       <PackageReference Include="ExtendedXmlSerializer" Version="3.4.3" />
       <PackageReference Include="Fleck" Version="1.1.0" />
       <PackageReference Include="Microsoft.AspNetCore.JsonPatch" Version="5.0.0" />

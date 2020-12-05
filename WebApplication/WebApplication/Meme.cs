@@ -1,19 +1,11 @@
 ﻿using System;
-using System.IO;
 using WebApplication.Models;
 
 namespace WebApplication
 {
-	[Serializable]
 	public class Meme
 	{
-		protected internal String FilePath
-		{
-			get
-			{
-				return Path.Combine(Startup.ContentRoot, "Videos", $"{Guid}.mp4");
-			}
-		}
+		protected internal String FilePath => Utils.FilePath(this);
 
 		public String CatText;
 		public String DrummerText;
@@ -29,11 +21,6 @@ namespace WebApplication
 			DrumText = memeInfo.DrumText;
 			Guid = Guid.NewGuid();
 			WorkStatus = new MemeWork(this);
-		}
-		
-		public void ReadXml(System.Xml.XmlReader reader)
-		{
-			WorkStatus.Meme = this;
 		}
 	}
 }

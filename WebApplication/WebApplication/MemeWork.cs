@@ -1,21 +1,16 @@
-using System;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
-using System.Xml.Serialization;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 using Xabe.FFmpeg;
 
 namespace WebApplication
 {
-    [Serializable]
     public class MemeWork
     {
         public WorkStatus Status;
-        [XmlIgnore, JsonIgnore]
-        public Task Worker;
-        [XmlIgnore, JsonIgnore]
+        protected internal Task Worker;
         public Meme Meme;
         public int Percentage;
 
@@ -25,7 +20,7 @@ namespace WebApplication
             Percentage = 0;
             Meme = meme;
             Status = WorkStatus.Scheduled;
-            Worker = new Task( () => DoWork() );
+            Worker = new Task(DoWork);
         }
 
         public void StartWork()
