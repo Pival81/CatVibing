@@ -10,33 +10,38 @@ namespace WebApplication.Controllers
 
 	[Route("meme")]
 	[ApiController]
-	public class MemeGenerator : ControllerBase
+	public class MemeController : ControllerBase
 	{
-		private readonly MemoryMemeRepository _memeRepo;
+		private readonly IMemeRepository _memeRepo;
 
-		public MemeGenerator(IMemeRepository memeRepository)
+		public MemeController(IMemeRepository memeRepository)
 		{
-			_memeRepo = memeRepository as MemoryMemeRepository;
+			_memeRepo = memeRepository;
 		}
 
-		[HttpPost]
 		[Route("create")]
+		[HttpPost]
 		public ActionResult<String> Create(MemeInfo memeInfo)
 		{
+			var guid = Utils.MD5($"{memeInfo.CatText}{memeInfo.DrummerText}{memeInfo.DrumText}");
+			var tempMeme = _memeRepo.Get(new Guid(guid));
+			if (tempMeme != null)
+				return Ok($"{tempMeme.Guid}:{tempMeme.MemeWork.Status}");
 			var meme = new Meme(memeInfo);
 			_memeRepo.Add(meme);
-			return Ok(meme.Guid.ToString());
+			return Ok($"{meme.Guid}:{meme.MemeWork.Status}");
 		}
 
 		[Route("repo.{format}"), FormatFilter]
 		[HttpGet]
 		public List<Meme> GetRepo()
 		{
+			_memeRepo.Save();
 			return _memeRepo.Memes;
 		}
 
-		[HttpGet]
 		[Route("delete/{guid}")]
+		[HttpGet]
 		public ActionResult DeleteMeme(Guid guid)
 		{
 			Meme meme = _memeRepo.Get(guid);
@@ -45,10 +50,26 @@ namespace WebApplication.Controllers
 			_memeRepo.Delete(guid);
 			return Ok();
 		}
+
+		[Route("getstatus/{guid}")]
+		[HttpGet]
+		public ActionResult<String> GetStatus(Guid guid)
+		{
+			var meme = _memeRepo.Get(guid);
+			return Ok(meme.MemeWork.Status);
+		}
+		
+		[Route("get/{guid}")]
+		[HttpGet]
+		public ActionResult<Meme> GetMeme(Guid guid)
+		{
+			var meme = _memeRepo.Get(guid);
+			return Ok(meme);
+		}
 		
 		[Route("view/{guid}")]
 		[HttpGet]
-		public async Task<ActionResult> GetMemeByGuid(Guid guid)
+		public ActionResult GetMemeByGuid(Guid guid)
 		{
 			Meme meme = _memeRepo.Get(guid);
 			if(meme == null)

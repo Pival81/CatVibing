@@ -1,4 +1,6 @@
-﻿namespace WebApplication.Models
+﻿using System;
+
+namespace WebApplication.Models
 {
 	public class MemeInfo
 	{

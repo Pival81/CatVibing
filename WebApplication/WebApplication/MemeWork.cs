@@ -1,6 +1,9 @@
+using System;
 using System.Diagnostics;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
+using System.Xml.Serialization;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 using Xabe.FFmpeg;
@@ -11,8 +14,9 @@ namespace WebApplication
     {
         public WorkStatus Status;
         protected internal Task Worker;
-        public Meme Meme;
+        [JsonIgnore] public Meme Meme;
         public int Percentage;
+        protected internal CancellationTokenSource _cancellationToken;
 
         public MemeWork(){}
         public MemeWork(Meme meme)
@@ -21,12 +25,19 @@ namespace WebApplication
             Meme = meme;
             Status = WorkStatus.Scheduled;
             Worker = new Task(DoWork);
+            _cancellationToken = new CancellationTokenSource();
         }
 
         public void StartWork()
         {
             Worker.Start();
             Status = WorkStatus.Working;
+        }
+
+        public void StopWork()
+        {
+            _cancellationToken.Cancel();
+            Status = WorkStatus.Stopped;
         }
 
         public async void DoWork()
@@ -50,15 +61,20 @@ namespace WebApplication
                     Debug.Write($"\r{Percentage:D2}");
                 };
 
-                await conv.Start();
-                Status = WorkStatus.Done;
+                try {
+                    await conv.Start(_cancellationToken.Token);
+                    Status = WorkStatus.Done;
+                } catch (OperationCanceledException ex) {
+                    Debug.WriteLine($"{Meme.Guid} was stopped.");
+                    Status = WorkStatus.Stopped;
+                } 
         }
     }
 
     [JsonConverter(typeof(StringEnumConverter))]
     public enum WorkStatus
     {
-        Canceled,
+        Stopped,
         Working,
         Done,
         Scheduled

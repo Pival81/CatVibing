@@ -10,5 +10,6 @@ namespace WebApplication.Repositories
 		void Add(Meme meme);
 		void Save();
 		void Delete(Guid memeId);
+		void Next();
 	}
 }

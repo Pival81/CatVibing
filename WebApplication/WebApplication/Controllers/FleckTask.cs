@@ -20,22 +20,23 @@ namespace WebApplication.Controllers
 			catch (Exception e) {}
 			if (resource == null)
 			{
-				socket.Send("ERROR");
+				socket.Send("NOTFOUND");
 				socket.Close();
 				return;
 			}
 			bool completed = false;
 			int num = -1;
+			WorkStatus status = resource.MemeWork.Status;
 			while (!completed)
 			{
-				if (resource.WorkStatus.Percentage == num)
+				if (resource.MemeWork.Percentage == num)
 					continue;
-				if (resource.WorkStatus.Status == WorkStatus.Done)
+				if (resource.MemeWork.Status == WorkStatus.Done)
 					completed = true;
-				num = resource.WorkStatus.Percentage;
+				num = resource.MemeWork.Percentage;
 				String response = $"{num:D2}\n";
 				socket.Send(response);
-				if(resource.WorkStatus.Percentage == 100)
+				if(resource.MemeWork.Percentage == 100)
 					socket.Send("DONE\n");
 			}
 			socket.Close();
