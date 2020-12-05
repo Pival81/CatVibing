@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using ExtendedXmlSerializer;
@@ -16,6 +17,7 @@ namespace WebApplication.Repositories
 
 		public MemoryMemeRepository()
 		{
+			bool didThrow = false;
 			try 
 			{
 				var xml = File.ReadAllText("Database.xml");
@@ -25,9 +27,11 @@ namespace WebApplication.Repositories
 			}
 			catch (Exception ex)
 			{
-				Console.WriteLine(ex);
+				Debug.WriteLine(ex);
+				didThrow = true;
 				_Memes = new List<Meme>();
 			}
+			Console.WriteLine($"Database ready in memory, {( didThrow ? "file was not there, recreated from scratch" : "successfully imported database from file" )}.");
 		}
 
 		public Meme Get(Guid memeId)
@@ -71,11 +75,12 @@ namespace WebApplication.Repositories
 			}
 		}
 		
-		public void Delete(Guid memeId)
+		public void Delete(Guid guid)
 		{
-			var meme = _Memes.FirstOrDefault(r => r.Guid == memeId);
+			var meme = Get(guid);
 			_Memes.Remove(meme);
-			meme.MemeWork.StopWork();
+			if(meme.MemeWork.Worker != null)
+				meme.MemeWork.StopWork();
 			File.Delete(meme.FilePath);
 			Next();
 			Save();

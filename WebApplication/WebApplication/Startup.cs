@@ -30,13 +30,20 @@ namespace WebApplication
 		public void ConfigureServices(IServiceCollection services)
 		{
 			services.AddSingleton<IMemeRepository, MemoryMemeRepository>();
+			services.AddCors(options =>
+			{
+				options.AddPolicy("CorsPolicy",
+					builder => builder.AllowAnyOrigin()
+						.AllowAnyMethod()
+						.AllowAnyHeader()
+						.AllowCredentials() );
+			});
 			services.AddControllers()
 				.AddXmlSerializerFormatters()
 				.AddNewtonsoftJson(options =>
 				{
 					options.SerializerSettings.Formatting = Formatting.Indented;
 					options.SerializerSettings.ReferenceLoopHandling = ReferenceLoopHandling.Ignore;
-					options.SerializerSettings.PreserveReferencesHandling = PreserveReferencesHandling.Objects;
 					options.SerializerSettings.TypeNameHandling = TypeNameHandling.Auto;
 				});
 		}
@@ -49,6 +56,8 @@ namespace WebApplication
 			{
 				app.UseDeveloperExceptionPage();
 			}
+			
+			app.UseCors("CorsPolicy");
 			
 			FleckServer.Start(socket =>
 			{
@@ -67,8 +76,6 @@ namespace WebApplication
 			app.UseHttpsRedirection();
 
 			app.UseRouting();
-
-			app.UseAuthorization();
 
 			app.UseEndpoints(endpoints => { endpoints.MapControllers(); });
 		}

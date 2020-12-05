@@ -32,8 +32,9 @@ namespace WebApplication.Controllers
 			return Ok($"{meme.Guid}:{meme.MemeWork.Status}");
 		}
 
-		[Route("repo.{format}"), FormatFilter]
+		[Route("repo")]
 		[HttpGet]
+		[Produces("application/json")]
 		public List<Meme> GetRepo()
 		{
 			_memeRepo.Save();
@@ -46,7 +47,7 @@ namespace WebApplication.Controllers
 		{
 			Meme meme = _memeRepo.Get(guid);
 			if(meme == null)
-				return new NotFoundResult();
+				return NotFound(null);
 			_memeRepo.Delete(guid);
 			return Ok();
 		}
@@ -56,24 +57,28 @@ namespace WebApplication.Controllers
 		public ActionResult<String> GetStatus(Guid guid)
 		{
 			var meme = _memeRepo.Get(guid);
+			if (meme == null)
+				return NotFound(null);
 			return Ok(meme.MemeWork.Status);
 		}
 		
 		[Route("get/{guid}")]
 		[HttpGet]
-		public ActionResult<Meme> GetMeme(Guid guid)
+		public ActionResult<Meme> GetMemeInfo(Guid guid)
 		{
 			var meme = _memeRepo.Get(guid);
+			if (meme == null)
+				return NotFound(null);
 			return Ok(meme);
 		}
 		
-		[Route("view/{guid}")]
+		[Route("watch/{guid}")]
 		[HttpGet]
 		public ActionResult GetMemeByGuid(Guid guid)
 		{
 			Meme meme = _memeRepo.Get(guid);
 			if(meme == null)
-				return new NotFoundResult();
+				return NotFound(null);
 			return PhysicalFile(meme.FilePath, "application/octet-stream", enableRangeProcessing: true);
 		}
 	}
