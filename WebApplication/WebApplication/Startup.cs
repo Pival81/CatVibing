@@ -61,7 +61,7 @@ namespace WebApplication
 			applicationLifetime.ApplicationStopping.Register(() =>
 			{
 				FleckServer.Dispose();
-				
+				memeRepository.Save();
 			});
 
 			app.UseHttpsRedirection();

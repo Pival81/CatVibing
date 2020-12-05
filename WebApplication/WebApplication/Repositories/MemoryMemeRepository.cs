@@ -6,15 +6,6 @@ using ExtendedXmlSerializer;
 
 namespace WebApplication.Repositories
 {
-	public interface IMemeRepository
-	{
-		List<Meme> Memes { get; }
-		Meme Get(Guid memeId);
-		void Add(Meme meme);
-		void Save();
-		void Delete(Guid memeId);
-	}
-
 	public class MemoryMemeRepository : IMemeRepository
 	{
 		private IList<Meme> _Memes { get; set; }
