@@ -1,13 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using WebApplication.Models;
 using WebApplication.Repositories;
 
 namespace WebApplication.Controllers
 {
-
 	[Route("meme")]
 	[ApiController]
 	public class MemeController : ControllerBase

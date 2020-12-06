@@ -13,15 +13,38 @@
         </h1>
 
         <v-form ref="form" v-model="valid">
-          <v-text-field :rules="requireRule" required filled label="Cat text" v-model="catText"></v-text-field>
-          <v-text-field :rules="requireRule" required filled label="Drummer text" v-model="drummerText"></v-text-field>
-          <v-text-field :rules="requireRule" required filled label="Drum text" v-model="drumText"></v-text-field>
-          <v-btn @click="onClick">Carchimi</v-btn>
+          <v-text-field
+            :rules="requireRule"
+            required
+            filled
+            id="cattext"
+            label="Cat text"
+            v-model="catText"
+          ></v-text-field>
+          <v-text-field
+            :rules="requireRule"
+            required
+            filled
+            id="drummertext"
+            label="Drummer text"
+            v-model="drummerText"
+          ></v-text-field>
+          <v-text-field
+            :rules="requireRule"
+            required
+            filled
+            id="drumtext"
+            label="Drum text"
+            v-model="drumText"
+          ></v-text-field>
+          <v-btn color="primary" @click="onClick">Carchimi</v-btn>
         </v-form>
       </v-col>
 
       <v-col class="mb-4">
-
+        <template v-for="(meme, index) in memes">
+          <Meme :guid="(meme)" :key="index" />
+        </template>
       </v-col>
     </v-row>
   </v-container>
@@ -30,26 +53,31 @@
 <script lang="ts">
 import { Component, Vue } from "vue-property-decorator";
 import axios from "axios";
+import Meme from "@/components/Meme.vue";
 
-@Component
-export default class Mammataa extends Vue{
-  private catText: string = null;
-  private drummerText: string = null;
-  private drumText: string = null;
-  private valid: boolean = null;
-  private memes: Array<Meme>;
-  private requireRule: Array = [ v => !!v || "This field is requried" ]
+@Component({ components: { Meme } })
+export default class Mammata extends Vue {
+  private catText: string | undefined;
+  private drummerText: string | undefined;
+  private drumText: string | undefined;
+  private valid = false;
+  private memes: Array<string> = new Array<string>();
+  private requireRule: Array<object> = [
+    (v: any) => !!v || "This field is required"
+  ];
 
-  onClick() : void {
+  onClick(): void {
     this.$refs.form.validate();
-    if(this.valid){
+    if (this.valid) {
       const MemeInfo: object = {
-        "catText": this.catText,
-        "drummerText": this.drummerText,
-        "drumText": this.drumText
+        catText: this.catText,
+        drummerText: this.drummerText,
+        drumText: this.drumText
       };
-      axios.post("http://127.0.0.1:5000/meme/create", MemeInfo)
-      .then(x => { console.log(x); })
+      axios.post("http://127.0.0.1:5000/meme/create", MemeInfo).then(x => {
+        const guid: string = x.data.split(":")[0];
+        this.memes.push(guid);
+      });
     }
   }
 }

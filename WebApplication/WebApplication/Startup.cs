@@ -36,10 +36,9 @@ namespace WebApplication
 					builder => builder.AllowAnyOrigin()
 						.AllowAnyMethod()
 						.AllowAnyHeader()
-						.AllowCredentials() );
+					);
 			});
 			services.AddControllers()
-				.AddXmlSerializerFormatters()
 				.AddNewtonsoftJson(options =>
 				{
 					options.SerializerSettings.Formatting = Formatting.Indented;
