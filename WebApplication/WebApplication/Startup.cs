@@ -1,5 +1,6 @@
 using System;
 using System.Threading;
+using System.Threading.Tasks;
 using Fleck;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -30,14 +31,11 @@ namespace WebApplication
 		public void ConfigureServices(IServiceCollection services)
 		{
 			services.AddSingleton<IMemeRepository, MemoryMemeRepository>();
-			services.AddCors(options =>
-			{
-				options.AddPolicy("CorsPolicy",
-					builder => builder.AllowAnyOrigin()
-						.AllowAnyMethod()
-						.AllowAnyHeader()
-					);
-			});
+			services.AddCors(options => options.AddPolicy("CorsPolicy",builder => builder
+				.AllowAnyOrigin()
+				.AllowAnyMethod()
+				.AllowAnyHeader()
+			));
 			services.AddControllers()
 				.AddNewtonsoftJson(options =>
 				{
@@ -56,7 +54,6 @@ namespace WebApplication
 				app.UseDeveloperExceptionPage();
 			}
 			
-			app.UseCors("CorsPolicy");
 			
 			FleckServer.Start(socket =>
 			{
@@ -72,11 +69,15 @@ namespace WebApplication
 				memeRepository.Save();
 			});
 
-			app.UseHttpsRedirection();
-
 			app.UseRouting();
+			
+			app.UseCors("CorsPolicy");
 
-			app.UseEndpoints(endpoints => { endpoints.MapControllers(); });
+			//app.UseHttpsRedirection();
+			
+			app.UseEndpoints(endpoints => { 
+				endpoints.MapControllers();
+			});
 		}
 	}
 }

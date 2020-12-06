@@ -20,7 +20,7 @@
             id="cattext"
             label="Cat text"
             v-model="catText"
-          ></v-text-field>
+          />
           <v-text-field
             :rules="requireRule"
             required
@@ -28,7 +28,7 @@
             id="drummertext"
             label="Drummer text"
             v-model="drummerText"
-          ></v-text-field>
+          />
           <v-text-field
             :rules="requireRule"
             required
@@ -36,14 +36,14 @@
             id="drumtext"
             label="Drum text"
             v-model="drumText"
-          ></v-text-field>
+          />
           <v-btn color="primary" @click="onClick">Carchimi</v-btn>
         </v-form>
       </v-col>
 
       <v-col class="mb-4">
         <template v-for="(meme, index) in memes">
-          <Meme :guid="(meme)" :key="index" />
+          <Meme :Guid="meme" :key="index" />
         </template>
       </v-col>
     </v-row>
@@ -57,9 +57,9 @@ import Meme from "@/components/Meme.vue";
 
 @Component({ components: { Meme } })
 export default class Mammata extends Vue {
-  private catText: string | undefined;
-  private drummerText: string | undefined;
-  private drumText: string | undefined;
+  private catText = "";
+  private drummerText = "";
+  private drumText = "";
   private valid = false;
   private memes: Array<string> = new Array<string>();
   private requireRule: Array<object> = [
@@ -74,7 +74,7 @@ export default class Mammata extends Vue {
         drummerText: this.drummerText,
         drumText: this.drumText
       };
-      axios.post("http://127.0.0.1:5000/meme/create", MemeInfo).then(x => {
+      axios.post("http://localhost:5000/meme/create", MemeInfo).then(x => {
         const guid: string = x.data.split(":")[0];
         this.memes.push(guid);
       });
