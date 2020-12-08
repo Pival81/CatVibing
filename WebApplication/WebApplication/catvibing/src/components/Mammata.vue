@@ -12,7 +12,7 @@
           Welcome to Mammata
         </h1>
 
-        <v-form ref="form" v-model="valid">
+        <v-form ref="form" @submit.prevent="onClick" v-model="valid">
           <v-text-field
             :rules="requireRule"
             required
@@ -37,13 +37,13 @@
             label="Drum text"
             v-model="drumText"
           />
-          <v-btn color="primary" @click="onClick">Carchimi</v-btn>
+          <v-btn color="primary" type="submit">Carchimi</v-btn>
         </v-form>
       </v-col>
 
       <v-col class="mb-4">
         <template v-for="(meme, index) in memes">
-          <Meme :Guid="meme" :key="index" />
+          <Meme :Guid="meme" :key="index" @deleteMe="deleteMeme"/>
         </template>
       </v-col>
     </v-row>
@@ -51,7 +51,7 @@
 </template>
 
 <script lang="ts">
-import { Component, Vue } from "vue-property-decorator";
+import { Component, Vue, Watch } from "vue-property-decorator";
 import axios from "axios";
 import Meme from "@/components/Meme.vue";
 
@@ -61,10 +61,15 @@ export default class Mammata extends Vue {
   private drummerText = "";
   private drumText = "";
   private valid = false;
-  private memes: Array<string> = new Array<string>();
-  private requireRule: Array<object> = [
-    (v: any) => !!v || "This field is required"
-  ];
+  private memes = new Array<string>();
+  private requireRule = [(v: any) => !!v || "This field is required"];
+
+  mounted(){
+    if(localStorage["memes"] === ""){
+      return;
+    }
+    this.memes = JSON.parse(localStorage["memes"]);
+  }
 
   onClick(): void {
     this.$refs.form.validate();
@@ -79,6 +84,15 @@ export default class Mammata extends Vue {
         this.memes.push(guid);
       });
     }
+  }
+
+  @Watch("memes")
+  onMemesChange(val: Array<string>, newVal: Array<string>){
+    localStorage["memes"] = JSON.stringify(newVal);
+  }
+
+  deleteMeme(e: string){
+    this.memes.splice(this.memes.indexOf(e), 1);
   }
 }
 </script>

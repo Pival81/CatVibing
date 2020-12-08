@@ -11,6 +11,7 @@
     "@types/randomcolor": "^0.5.5",
     "axios": "^0.21.0",
     "core-js": "^3.6.5",
+    "lodash": "^4.17.20",
     "randomcolor": "^0.6.2",
     "register-service-worker": "^1.7.1",
     "vue": "^2.6.11",
@@ -18,9 +19,11 @@
     "vue-property-decorator": "^8.4.2",
     "vue-resize-text": "^0.1.1",
     "vue-router": "^3.2.0",
-    "vuetify": "^2.2.11"
+    "vue-md-player": "^0.1.4"
   },
   "devDependencies": {
+    "@mdi/font": "^5.8.55",
+    "@types/lodash": "^4.14.165",
     "@typescript-eslint/eslint-plugin": "^2.33.0",
     "@typescript-eslint/parser": "^2.33.0",
     "@vue/cli-plugin-babel": "~4.5.0",

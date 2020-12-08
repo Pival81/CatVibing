@@ -9,22 +9,37 @@
     <v-card-text>
       Cat text: {{ CatText }}<br />
       Drummer text: {{ DrummerText }}<br />
-      Drum text: {{ DrumText }}
+      Drum text: {{ DrumText }}<br/>
+      <v-chip>{{ Status }}</v-chip>
+      <v-progress-circular :value="(Percentage)" color="randomcolor" v-show="Percentage > 0">
+        <span class="percentage">{{ Percentage }}</span>
+      </v-progress-circular>
     </v-card-text>
-    <v-chip>{{ Status }}</v-chip>
-    <v-progress-circular :value="(Percentage)" color="randomcolor()" v-show="Percentage > 0">
-      <span class="percentage">{{ Percentage }}</span>
-    </v-progress-circular>
+    <v-card-actions>
+      <v-btn value="Delete" @click="onDelete" fab small elevation="2" dark color="error">
+        <v-icon dark>mdi-delete</v-icon>
+      </v-btn>
+      <v-btn value="Watch" @click="dialog = true;" fab small elevation="2" dark>
+        <v-icon dark>mdi-play</v-icon>
+      </v-btn>
+    </v-card-actions>
+    <v-dialog v-model="dialog">
+      <video-player>
+        <source :src="`http://127.0.0.1:5000/meme/watch/{Guid}`"/>
+      </video-player>
+    </v-dialog>
   </v-card>
 </template>
 
 <script lang="ts">
 import { Component, Prop, Vue } from "vue-property-decorator";
 import axios from "axios";
-import ResizeText from 'vue-resize-text';
 import randomColor from "randomcolor";
+import { videoPlayer } from 'vue-md-player'
+import 'vue-md-player/dist/vue-md-player.css'
 
 enum Status {
+  Error = "Error",
   Stopped = "Stopped",
   Working = "Working",
   Done = "Done",
@@ -34,9 +49,9 @@ enum Status {
 @Component
 export default class Meme extends Vue {
   public name = "Meme";
-  directives = { ResizeText }
   private disabled = true;
   private loading = true;
+  private dialog = false;
   public CatText = "";
   public DrummerText = "";
   public DrumText = "";
@@ -73,12 +88,19 @@ export default class Meme extends Vue {
           this.Connection.close();
         }
       };
-      this.Connection.onerror = (ev: ErrorEvent) => {
-        ;
+      this.Connection.onerror = (ev: Event) => {
+        this.Status = Status.Error;
       };
     }
     this.loading = false;
     this.disabled = false;
+  }
+
+  onDelete(){
+    axios.get(
+      `http://localhost:5000/meme/delete/${this.Guid}`
+    );
+    this.$emit("deleteMe", this.Guid);
   }
 }
 </script>
