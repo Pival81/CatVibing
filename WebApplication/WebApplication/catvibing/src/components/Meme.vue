@@ -7,26 +7,44 @@
     :loading="loading"
   >
     <v-card-text>
-      Cat text: {{ CatText }}<br />
-      Drummer text: {{ DrummerText }}<br />
-      Drum text: {{ DrumText }}<br/>
-      <v-chip>{{ Status }}</v-chip>
-      <v-progress-circular :value="(Percentage)" color="randomcolor" v-show="Percentage > 0">
-        <span class="percentage">{{ Percentage }}</span>
-      </v-progress-circular>
+      <v-simple-table>
+        <template class="text-h3">
+          <tr>
+            <th>Cat text</th>
+            <th>Drummer text</th>
+            <th>Drum text</th>
+          </tr>
+          <tr>
+            <td>{{ CatText }}</td>
+            <td>{{ DrummerText }}</td>
+            <td>{{ DrumText }}</td>
+          </tr>
+        </template>
+      </v-simple-table>
+      <br/>
+      <div class="justify-space-around d-flex align-center">
+        <v-chip :color="getStatusColor()">{{ Status }}</v-chip>
+        <v-progress-circular rotate="270" :value="(Percentage)" color="randomcolor()" v-show="Percentage > 0">
+          <span class="percentage">{{ Percentage }}</span>
+        </v-progress-circular>
+        <v-btn value="Delete" @click="onDelete" fab small elevation="2" dark color="error">
+          <v-icon dark>mdi-delete</v-icon>
+        </v-btn>
+        <v-btn value="Watch" @click="dialog = true" fab small elevation="2" :dark="isDone()" :disabled="!isDone()">
+          <v-icon dark>mdi-play</v-icon>
+        </v-btn>
+      </div>
     </v-card-text>
-    <v-card-actions>
-      <v-btn value="Delete" @click="onDelete" fab small elevation="2" dark color="error">
-        <v-icon dark>mdi-delete</v-icon>
-      </v-btn>
-      <v-btn value="Watch" @click="dialog = true;" fab small elevation="2" dark>
-        <v-icon dark>mdi-play</v-icon>
-      </v-btn>
-    </v-card-actions>
-    <v-dialog v-model="dialog">
-      <video-player>
-        <source :src="`http://127.0.0.1:5000/meme/watch/{Guid}`"/>
-      </video-player>
+    <v-dialog v-model="dialog" @click:outside="closeVideo()">
+        <vue-plyr ref="plyr">
+          <video
+          controls
+          crossorigin
+          playsinline>
+            <source :src="`http://localhost:5000/meme/watch/${this.Guid}`"
+            type="video/mp4"/>
+          </video>
+        </vue-plyr>
     </v-dialog>
   </v-card>
 </template>
@@ -35,10 +53,8 @@
 import { Component, Prop, Vue } from "vue-property-decorator";
 import axios from "axios";
 import randomColor from "randomcolor";
-import { videoPlayer } from 'vue-md-player'
-import 'vue-md-player/dist/vue-md-player.css'
 
-enum Status {
+enum StatusType {
   Error = "Error",
   Stopped = "Stopped",
   Working = "Working",
@@ -55,7 +71,7 @@ export default class Meme extends Vue {
   public CatText = "";
   public DrummerText = "";
   public DrumText = "";
-  public Status: Status = Status.Scheduled;
+  public Status: StatusType = StatusType.Scheduled;
   public Percentage: number;
   @Prop({ type: String, required: true })
   public Guid!: string;
@@ -68,6 +84,33 @@ export default class Meme extends Vue {
 
   randomcolor(): string{ return randomColor(); }
 
+  isDone(): boolean{
+    return this.Status == StatusType.Done;
+  }
+
+  closeVideo(){
+    this.$refs.plyr.player.stop();
+  }
+
+  getStatusColor(): string{
+    switch (this.Status){
+      case StatusType.Done:
+        return "green";
+
+      case StatusType.Error:
+        return "red";
+
+      case StatusType.Working:
+        return "light-blue";
+
+      case StatusType.Scheduled:
+        return "lime";
+
+      case StatusType.Stopped:
+        return "deep-orange";
+    }
+  }
+
   async created() {
     const memeData = await axios.get(
       `http://localhost:5000/meme/get/${this.Guid}`
@@ -77,19 +120,19 @@ export default class Meme extends Vue {
     this.DrumText = memeData.data.drumText;
     this.Status = memeData.data.memeWork.status;
     this.Percentage = memeData.data.memeWork.percentage;
-    if (this.Status != Status.Done) {
+    if (this.Status != StatusType.Done) {
       this.Connection = new WebSocket(`ws://127.0.0.1:8181/${this.Guid}`);
       this.Connection.onmessage = (ev: MessageEvent) => {
         const num: number = parseInt(ev.data);
         if (!isNaN(num)) {
           this.Percentage = num;
         } else if (ev.data === "DONE\n") {
-          this.Status = Status.Done;
+          this.Status = StatusType.Done;
           this.Connection.close();
         }
       };
       this.Connection.onerror = (ev: Event) => {
-        this.Status = Status.Error;
+        this.Status = StatusType.Error;
       };
     }
     this.loading = false;

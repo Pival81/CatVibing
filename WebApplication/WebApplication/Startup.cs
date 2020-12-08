@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Fleck;
@@ -66,14 +68,18 @@ namespace WebApplication
 			applicationLifetime.ApplicationStopping.Register(() =>
 			{
 				FleckServer.Dispose();
-				memeRepository.Save();
+				List<Task> workingMemes = new List<Task>(
+					from meme in memeRepository.Memes
+					where meme.MemeWork.Status == WorkStatus.Working
+					select meme.MemeWork.Worker);
+				Task.WhenAll(workingMemes).Wait();
 			});
 
 			app.UseRouting();
 			
 			app.UseCors("CorsPolicy");
 
-			//app.UseHttpsRedirection();
+			app.UseHttpsRedirection();
 			
 			app.UseEndpoints(endpoints => { 
 				endpoints.MapControllers();

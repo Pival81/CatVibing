@@ -40,6 +40,7 @@ namespace WebApplication.Controllers
 					socket.Send("DONE\n");
 			}
 			socket.Close();
+			memeRepo.Next();
 		}
 	}
 }

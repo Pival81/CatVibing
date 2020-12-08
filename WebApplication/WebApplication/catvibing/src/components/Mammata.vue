@@ -12,7 +12,7 @@
           Welcome to Mammata
         </h1>
 
-        <v-form ref="form" @submit.prevent="onClick" v-model="valid">
+        <v-form ref="form" @submit.prevent="onClick" lazy-validation v-model="valid">
           <v-text-field
             :rules="requireRule"
             required
@@ -72,7 +72,6 @@ export default class Mammata extends Vue {
   }
 
   onClick(): void {
-    this.$refs.form.validate();
     if (this.valid) {
       const MemeInfo: object = {
         catText: this.catText,
@@ -81,6 +80,8 @@ export default class Mammata extends Vue {
       };
       axios.post("http://localhost:5000/meme/create", MemeInfo).then(x => {
         const guid: string = x.data.split(":")[0];
+        if(this.memes.includes(guid))
+          return;
         this.memes.push(guid);
       });
     }

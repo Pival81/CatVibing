@@ -15,7 +15,7 @@ namespace WebApplication
         protected internal Task Worker;
         [JsonIgnore] public Meme Meme;
         public int Percentage;
-        protected internal CancellationTokenSource _cancellationToken;
+        private CancellationTokenSource _cancellationToken;
 
         public MemeWork(){}
         public MemeWork(Meme meme)

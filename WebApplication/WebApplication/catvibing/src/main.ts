@@ -3,12 +3,16 @@ import App from "./App.vue";
 import "./registerServiceWorker";
 import vuetify from "./plugins/vuetify";
 import axios from "axios";
-import VueResizeText from 'vue-resize-text';
+import VuePlyr from "vue-plyr";
+import "vue-plyr/dist/vue-plyr.css";
 
 Vue.config.productionTip = false;
 
-axios.defaults.headers.common['crossdomain'] = true;
-Vue.use(VueResizeText);
+Vue.use(VuePlyr, {
+  plyr: {}
+});
+
+axios.defaults.headers.common["crossdomain"] = true;
 
 new Vue({
   vuetify,
