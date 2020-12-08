@@ -9,7 +9,9 @@ import "vue-plyr/dist/vue-plyr.css";
 Vue.config.productionTip = false;
 
 Vue.use(VuePlyr, {
-  plyr: {}
+  plyr: { storage: {
+    enabled: false
+    }}
 });
 
 axios.defaults.headers.common["crossdomain"] = true;

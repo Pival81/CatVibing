@@ -79,7 +79,7 @@ namespace WebApplication
 			
 			app.UseCors("CorsPolicy");
 
-			app.UseHttpsRedirection();
+			//app.UseHttpsRedirection();
 			
 			app.UseEndpoints(endpoints => { 
 				endpoints.MapControllers();

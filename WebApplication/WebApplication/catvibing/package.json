@@ -22,9 +22,7 @@
     "vue-plyr": "^7.0.0"
   },
   "devDependencies": {
-    "@algoz098/vue-player": "^0.4.3",
     "@mdi/font": "^5.8.55",
-    "@types/lodash": "^4.14.165",
     "@typescript-eslint/eslint-plugin": "^2.33.0",
     "@typescript-eslint/parser": "^2.33.0",
     "@vue/cli-plugin-babel": "~4.5.0",

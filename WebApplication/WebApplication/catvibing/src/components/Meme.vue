@@ -41,7 +41,7 @@
           controls
           crossorigin
           playsinline>
-            <source :src="`http://localhost:5000/meme/watch/${this.Guid}`"
+            <source size="720" :src="`http://localhost:5000/meme/watch/${this.Guid}`"
             type="video/mp4"/>
           </video>
         </vue-plyr>

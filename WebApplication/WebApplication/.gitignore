@@ -5,3 +5,5 @@ obj/*
 bin/*
 Videos/*
 !Videos/.gitkeep
+Temp/*
+!Temp/.gitkeep
