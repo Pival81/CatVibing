@@ -19,6 +19,7 @@
     "vue-property-decorator": "^8.4.2",
     "vue-resize-text": "^0.1.1",
     "vue-router": "^3.2.0",
+    "vuetify": "^2.2.11",
     "vue-md-player": "^0.1.4"
   },
   "devDependencies": {
