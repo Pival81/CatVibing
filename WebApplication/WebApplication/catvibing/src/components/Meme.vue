@@ -24,7 +24,7 @@
       <br/>
       <div class="justify-space-around d-flex align-center">
         <v-chip :color="getStatusColor()">{{ Status }}</v-chip>
-        <v-progress-circular rotate="270" :value="(Percentage)" color="randomcolor()" v-show="Percentage > 0">
+        <v-progress-circular rotate="270" :value="(Percentage)" :color="randomcolor()" v-show="Percentage > 0">
           <span class="percentage">{{ Percentage }}</span>
         </v-progress-circular>
         <v-btn value="Delete" @click="onDelete" fab small elevation="2" dark color="error">
@@ -36,12 +36,12 @@
       </div>
     </v-card-text>
     <v-dialog v-model="dialog" @click:outside="closeVideo()">
-        <vue-plyr ref="plyr">
+        <vue-plyr style="max-width: 75vw" ref="plyr">
           <video
           controls
           crossorigin
           playsinline>
-            <source size="720" :src="`http://localhost:5000/meme/watch/${this.Guid}`"
+            <source :src="`http://localhost:5000/meme/watch/${this.Guid}`"
             type="video/mp4"/>
           </video>
         </vue-plyr>
@@ -82,7 +82,7 @@ export default class Meme extends Vue {
     this.Percentage = -1;
   }
 
-  randomcolor(): string{ return randomColor(); }
+  randomcolor(): string{ return randomColor({ luminosity:'dark' }); }
 
   isDone(): boolean{
     return this.Status == StatusType.Done;

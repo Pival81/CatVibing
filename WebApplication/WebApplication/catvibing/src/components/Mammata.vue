@@ -61,15 +61,8 @@ export default class Mammata extends Vue {
   private drummerText = "";
   private drumText = "";
   private valid = false;
-  private memes = new Array<string>();
+  private memes: Array<string> = JSON.parse(localStorage["memes"]) || [];
   private requireRule = [(v: any) => !!v || "This field is required"];
-
-  mounted(){
-    if(localStorage["memes"] === ""){
-      return;
-    }
-    this.memes = JSON.parse(localStorage["memes"]);
-  }
 
   onClick(): void {
     if (this.valid) {
