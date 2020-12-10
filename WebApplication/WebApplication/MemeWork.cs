@@ -41,6 +41,7 @@ namespace WebApplication
 
         public async void DoWork()
         {
+            Console.WriteLine("started cat");
             var catImage = new MagickImage();
             catImage.Read($"caption:{Meme.CatText}", new MagickReadSettings()
             {
@@ -57,7 +58,10 @@ namespace WebApplication
                 catImage.Read($"caption:{Meme.CatText}", catImage.Settings as MagickReadSettings);
             }
             catImage.Write($"./Temp/cat_{Meme.Guid}.png");
+            catImage.Dispose();
+            Console.WriteLine("finished cat");
 
+            Console.WriteLine("started drummer");
             var drummerImage = new MagickImage();
             drummerImage.Read($"caption:{Meme.DrummerText}", new MagickReadSettings()
             {
@@ -74,7 +78,10 @@ namespace WebApplication
                 drummerImage.Read($"caption:{Meme.DrummerText}", drummerImage.Settings as MagickReadSettings);
             }
             drummerImage.Write($"./Temp/drummer_{Meme.Guid}.png");
+            drummerImage.Dispose();
+            Console.WriteLine("finished drummer");
 
+            Console.WriteLine("started drum");
             var drumImage = new MagickImage();
             drumImage.Read($"caption:{Meme.DrumText}", new MagickReadSettings()
             {
@@ -91,28 +98,33 @@ namespace WebApplication
                 drumImage.Read($"caption:{Meme.DrumText}", drumImage.Settings as MagickReadSettings);
             }
             drumImage.Write($"./Temp/drum_{Meme.Guid}.png");
+            drumImage.Dispose();
+            Console.WriteLine("finished drum");
 
             var conv = FFmpeg.Conversions.New();
             conv.OnProgress += (sender, args) => Percentage = args.Percent;
 
             try {
+                Console.WriteLine("started ffmpeg");
                 await conv.Start($"-i {Utils.InputFile} " +
                      $"-i {Path.Combine(Startup.ContentRoot, "Temp", $"cat_{Meme.Guid}.png")} " +
                      $"-i {Path.Combine(Startup.ContentRoot, "Temp", $"drummer_{Meme.Guid}.png")} " +
                      $"-i {Path.Combine(Startup.ContentRoot, "Temp", $"drum_{Meme.Guid}.png")} " +
-                     $"-filter_complex \"overlay={450 - (catImage.Width / 2)}:{530 - (catImage.Height / 2)} [out];" +
-                     $"[out] overlay={1250 - (drummerImage.Width / 2)}:{500 - (drummerImage.Height / 2)} [out1]; " +
-                     $"[out1] overlay={1300 - (drumImage.Width / 2)}:{900 - (drumImage.Height / 2)}\"" +
-                     $" \"{Path.Combine(Startup.ContentRoot, "Videos", $"{Meme.Guid}.mp4")}\"",
+                     $"-filter_complex \"overlay={450 - (800 / 2)}:{530 - (800 / 2)} [out];" +
+                     $"[out] overlay={1250 - (700 / 2)}:{500 - (460 / 2)} [out1]; " +
+                     $"[out1] overlay={1300 - (1000 / 2)}:{900 - (300 / 2)}\"" +
+                     $" \"{Path.Combine(Startup.ContentRoot, "Videos", $"{Meme.Guid}.mp4")}\"" +
+                     " -hwaccel h264_nvenc",
                     _cancellationToken.Token);
                 Status = WorkStatus.Done;
+                Console.WriteLine("finished ffmpeg");
             } catch (OperationCanceledException ex) {
                 Console.WriteLine($"{Meme.Guid} was stopped.");
                 Status = WorkStatus.Stopped;
             }
-            File.Delete(Path.Combine(Startup.ContentRoot, "Temp", $"cat_{Meme.Guid}.png"));
-            File.Delete(Path.Combine(Startup.ContentRoot, "Temp", $"drummer_{Meme.Guid}.png"));
-            File.Delete(Path.Combine(Startup.ContentRoot, "Temp", $"drum_{Meme.Guid}.png"));
+            Utils.DeleteFile(Path.Combine(Startup.ContentRoot, "Temp", $"cat_{Meme.Guid}.png"));
+            Utils.DeleteFile(Path.Combine(Startup.ContentRoot, "Temp", $"drummer_{Meme.Guid}.png"));
+            Utils.DeleteFile(Path.Combine(Startup.ContentRoot, "Temp", $"drum_{Meme.Guid}.png"));
         }
     }
 

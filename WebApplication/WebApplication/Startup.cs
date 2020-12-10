@@ -87,22 +87,13 @@ namespace WebApplication
 
 			//app.UseHttpsRedirection();
 			
-			app.UseEndpoints(endpoints => { 
-				endpoints.MapControllers();
-			});
+			app.UseEndpoints(endpoints => endpoints.MapControllers());
 			
 			app.UseSpa(spa =>
 			{
-				if (env.IsDevelopment())
-					spa.Options.SourcePath = "catvibing/";
-				else
-					spa.Options.SourcePath = "dist";
-
-				if (env.IsDevelopment())
-				{
+				spa.Options.SourcePath = env.IsDevelopment() ? "catvibing/" : "dist";
+				if(env.IsDevelopment())
 					spa.UseVueCli(npmScript: "serve");
-				}
-
 			});
 		}
 	}

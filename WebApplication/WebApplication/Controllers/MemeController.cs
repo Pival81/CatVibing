@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using Microsoft.AspNetCore.Mvc;
 using WebApplication.Models;
 using WebApplication.Repositories;
@@ -39,10 +40,22 @@ namespace WebApplication.Controllers
 			return _memeRepo.Memes;
 		}
 
+		[Route("download/{guid}")]
+		[HttpGet]
+		public IActionResult MemeDownload(Guid guid)
+		{
+			var meme = _memeRepo.Get(guid);
+			if(meme == null)
+				return NotFound(null);
+			var fs = new FileStream(meme.FilePath, FileMode.Open);
+			return File(fs, "application/octet-stream", $"{meme.Guid}.mp4");
+		}
+		
 		[Route("delete/{guid}")]
 		[HttpGet]
 		public ActionResult DeleteMeme(Guid guid)
 		{
+			Console.WriteLine("deleting");
 			Meme meme = _memeRepo.Get(guid);
 			if(meme == null)
 				return NotFound(null);

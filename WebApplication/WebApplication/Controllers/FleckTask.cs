@@ -1,4 +1,5 @@
 using System;
+using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using Fleck;
@@ -36,8 +37,12 @@ namespace WebApplication.Controllers
 				num = resource.MemeWork.Percentage;
 				String response = $"{num:D2}\n";
 				socket.Send(response);
-				if(resource.MemeWork.Percentage == 100)
+				if (resource.MemeWork.Percentage == 100)
+				{
+					while (Utils.IsFileLocked(new FileInfo(resource.FilePath)))
+						Thread.Sleep(200);
 					socket.Send("DONE\n");
+				}
 			}
 			socket.Close();
 			memeRepo.Next();

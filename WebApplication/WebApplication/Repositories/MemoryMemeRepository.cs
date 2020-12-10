@@ -81,7 +81,7 @@ namespace WebApplication.Repositories
 			_Memes.Remove(meme);
 			if(meme.MemeWork.Worker != null)
 				meme.MemeWork.StopWork();
-			File.Delete(meme.FilePath);
+			Utils.DeleteFile(meme.FilePath);
 			Next();
 			Save();
 		}

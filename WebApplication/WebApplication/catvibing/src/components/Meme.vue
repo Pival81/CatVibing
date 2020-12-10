@@ -33,18 +33,19 @@
         <v-btn value="Watch" @click="dialog = true" fab small elevation="2" :dark="isDone()" :disabled="!isDone()">
           <v-icon dark>mdi-play</v-icon>
         </v-btn>
+        <v-btn value="Download" :href="`/meme/download/${Guid}`" fab small elevation="2" :dark="isDone()" :disabled="!isDone()">
+          <v-icon dark>mdi-download</v-icon>
+        </v-btn>
       </div>
     </v-card-text>
     <v-dialog v-model="dialog" @click:outside="closeVideo()">
-        <vue-plyr style="max-width: 75vw" ref="plyr">
-          <video max-width="75vw"
-          controls
-          crossorigin
-          playsinline>
-            <source :src="`/meme/watch/${this.Guid}`"
-            type="video/mp4"/>
-          </video>
-        </vue-plyr>
+      <video ref="video" max-width="75vw"
+      controls
+      crossorigin
+      playsinline>
+        <source :src="`/meme/watch/${this.Guid}`"
+        type="video/mp4"/>
+      </video>
     </v-dialog>
   </v-card>
 </template>
@@ -89,7 +90,8 @@ export default class Meme extends Vue {
   }
 
   closeVideo(){
-    this.$refs.plyr.player.stop();
+    this.$refs.video.pause();
+    this.$refs.video.currentTime = 0;
   }
 
   getStatusColor(): string{

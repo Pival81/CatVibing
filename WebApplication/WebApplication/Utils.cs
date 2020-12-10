@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Security.Cryptography;
 using System.Text;
+using System.Threading;
 using System.Xml;
 using ExtendedXmlSerializer;
 using ExtendedXmlSerializer.Configuration;
@@ -45,6 +46,39 @@ namespace WebApplication
 				sb.Append(hashBytes[i].ToString("X2"));
 			}
 			return sb.ToString();
+		}
+		
+		public static bool IsFileLocked(FileInfo file)
+		{
+			FileStream stream = null;
+
+			try
+			{
+				stream = file.Open(FileMode.Open, FileAccess.ReadWrite, FileShare.None);
+			}
+			catch (IOException)
+			{
+				//the file is unavailable because it is:
+				//still being written to
+				//or being processed by another thread
+				//or does not exist (has already been processed)
+				return true;
+			}
+			finally
+			{
+				if (stream != null)
+					stream.Close();
+			}
+
+			//file is not locked
+			return false;
+		}
+
+		public static void DeleteFile(String path)
+		{
+			while (Utils.IsFileLocked(new FileInfo(path)))
+				Thread.Sleep(200);
+			File.Delete(path);
 		}
 	}
 }

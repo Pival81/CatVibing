@@ -12,7 +12,7 @@
           Welcome to Mammata
         </h1>
 
-        <v-form ref="form" @submit.prevent="onClick" lazy-validation v-model="valid">
+        <v-form max-width="80%" ref="form" @submit.prevent="onClick" lazy-validation v-model="valid">
           <v-text-field
             :rules="requireRule"
             required
@@ -42,9 +42,11 @@
       </v-flex>
 
       <v-col class="mb-4">
-        <template v-for="(meme, index) in memes">
-          <Meme :Guid="meme" :key="index" @deleteMe="deleteMeme"/>
-        </template>
+        <v-list v-for="(meme, index) in memes" :key="index">
+          <v-list-item style="display: block">
+            <Meme :Guid="meme" @deleteMe="deleteMeme"/>
+          </v-list-item>
+        </v-list>
       </v-col>
     </v-row>
   </v-container>
