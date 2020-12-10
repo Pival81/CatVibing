@@ -1,7 +1,7 @@
 <template>
   <v-container>
     <v-row class="text-center">
-      <v-col class="mb-4">
+      <v-flex class="mb-4">
         <v-img
           :src="require('../assets/logo.svg')"
           class="my-3"
@@ -39,7 +39,7 @@
           />
           <v-btn color="primary" type="submit">Carchimi</v-btn>
         </v-form>
-      </v-col>
+      </v-flex>
 
       <v-col class="mb-4">
         <template v-for="(meme, index) in memes">
@@ -61,9 +61,17 @@ export default class Mammata extends Vue {
   private drummerText = "";
   private drumText = "";
   private valid = false;
-  private memes: Array<string> = JSON.parse(localStorage["memes"]) || [];
+  private memes = new Array<string>();
   private requireRule = [(v: any) => !!v || "This field is required"];
 
+  constructor() {
+    super();
+    if(localStorage["memes"] === undefined){
+      localStorage["memes"] = "[]";
+    }
+    this.memes = JSON.parse(localStorage["memes"]);
+  }
+  
   onClick(): void {
     if (this.valid) {
       const MemeInfo: object = {
@@ -71,7 +79,7 @@ export default class Mammata extends Vue {
         drummerText: this.drummerText,
         drumText: this.drumText
       };
-      axios.post("http://localhost:5000/meme/create", MemeInfo).then(x => {
+      axios.post("/meme/create", MemeInfo).then(x => {
         const guid: string = x.data.split(":")[0];
         if(this.memes.includes(guid))
           return;
@@ -86,7 +94,7 @@ export default class Mammata extends Vue {
   }
 
   deleteMeme(e: string){
-    this.memes.splice(this.memes.indexOf(e), 1);
+    this.$delete(this.memes, this.memes.indexOf(e));
   }
 }
 </script>

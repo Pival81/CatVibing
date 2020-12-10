@@ -10,6 +10,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Newtonsoft.Json;
+using VueCliMiddleware;
 using WebApplication.Controllers;
 using WebApplication.Repositories;
 using IApplicationLifetime = Microsoft.AspNetCore.Hosting.IApplicationLifetime;
@@ -19,7 +20,7 @@ namespace WebApplication
 	public class Startup
 	{
 		public static String ContentRoot;
-		public static WebSocketServer FleckServer = new WebSocketServer("ws://127.0.0.1:8181");
+		public static WebSocketServer FleckServer = new WebSocketServer("ws://0.0.0.0:8181");
 		
 		public Startup(IConfiguration configuration, IWebHostEnvironment env)
 		{
@@ -45,6 +46,10 @@ namespace WebApplication
 					options.SerializerSettings.ReferenceLoopHandling = ReferenceLoopHandling.Ignore;
 					options.SerializerSettings.TypeNameHandling = TypeNameHandling.Auto;
 				});
+			services.AddSpaStaticFiles(configuration =>
+			{
+				configuration.RootPath = "catvibing";
+			});
 		}
 
 		// This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -55,8 +60,7 @@ namespace WebApplication
 			{
 				app.UseDeveloperExceptionPage();
 			}
-			
-			
+
 			FleckServer.Start(socket =>
 			{
 				var cancToken = new CancellationTokenSource();
@@ -77,12 +81,28 @@ namespace WebApplication
 
 			app.UseRouting();
 			
+			app.UseSpaStaticFiles();
+			
 			app.UseCors("CorsPolicy");
 
 			//app.UseHttpsRedirection();
 			
 			app.UseEndpoints(endpoints => { 
 				endpoints.MapControllers();
+			});
+			
+			app.UseSpa(spa =>
+			{
+				if (env.IsDevelopment())
+					spa.Options.SourcePath = "catvibing/";
+				else
+					spa.Options.SourcePath = "dist";
+
+				if (env.IsDevelopment())
+				{
+					spa.UseVueCli(npmScript: "serve");
+				}
+
 			});
 		}
 	}

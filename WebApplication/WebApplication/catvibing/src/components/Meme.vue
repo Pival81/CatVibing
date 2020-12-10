@@ -24,10 +24,10 @@
       <br/>
       <div class="justify-space-around d-flex align-center">
         <v-chip :color="getStatusColor()">{{ Status }}</v-chip>
-        <v-progress-circular rotate="270" :value="(Percentage)" :color="randomcolor()" v-show="Percentage > 0">
+        <v-progress-circular rotate="270" :value="(Percentage)" :color="Color" v-show="Percentage > 0">
           <span class="percentage">{{ Percentage }}</span>
         </v-progress-circular>
-        <v-btn value="Delete" @click="onDelete" fab small elevation="2" dark color="error">
+        <v-btn value="Delete" @click="deleteMe" fab small elevation="2" dark color="error">
           <v-icon dark>mdi-delete</v-icon>
         </v-btn>
         <v-btn value="Watch" @click="dialog = true" fab small elevation="2" :dark="isDone()" :disabled="!isDone()">
@@ -37,11 +37,11 @@
     </v-card-text>
     <v-dialog v-model="dialog" @click:outside="closeVideo()">
         <vue-plyr style="max-width: 75vw" ref="plyr">
-          <video
+          <video max-width="75vw"
           controls
           crossorigin
           playsinline>
-            <source :src="`http://localhost:5000/meme/watch/${this.Guid}`"
+            <source :src="`/meme/watch/${this.Guid}`"
             type="video/mp4"/>
           </video>
         </vue-plyr>
@@ -76,13 +76,13 @@ export default class Meme extends Vue {
   @Prop({ type: String, required: true })
   public Guid!: string;
   private Connection!: WebSocket;
+  private Color: string;
 
   constructor() {
     super();
     this.Percentage = -1;
+    this.Color = randomColor({ luminosity:'dark' });
   }
-
-  randomcolor(): string{ return randomColor({ luminosity:'dark' }); }
 
   isDone(): boolean{
     return this.Status == StatusType.Done;
@@ -113,15 +113,21 @@ export default class Meme extends Vue {
 
   async created() {
     const memeData = await axios.get(
-      `http://localhost:5000/meme/get/${this.Guid}`
-    );
+      `/meme/get/${this.Guid}`
+    ).catch(error => {
+      console.log(error.response);
+      if (error.response.status === 404){
+        this.deleteMe();
+        return;
+      }
+    });
     this.CatText = memeData.data.catText;
     this.DrummerText = memeData.data.drummerText;
     this.DrumText = memeData.data.drumText;
     this.Status = memeData.data.memeWork.status;
     this.Percentage = memeData.data.memeWork.percentage;
     if (this.Status != StatusType.Done) {
-      this.Connection = new WebSocket(`ws://127.0.0.1:8181/${this.Guid}`);
+      this.Connection = new WebSocket(`ws://${document.location.host}:8181/${this.Guid}`);
       this.Connection.onmessage = (ev: MessageEvent) => {
         const num: number = parseInt(ev.data);
         if (!isNaN(num)) {
@@ -139,9 +145,9 @@ export default class Meme extends Vue {
     this.disabled = false;
   }
 
-  onDelete(){
+  deleteMe(){
     axios.get(
-      `http://localhost:5000/meme/delete/${this.Guid}`
+      `/meme/delete/${this.Guid}`
     );
     this.$emit("deleteMe", this.Guid);
   }
